@@ -15,6 +15,7 @@ scheduler = APScheduler()
 scheduler.api_enabled = True
 scheduler.init_app(app)
 scheduler.start()
+timestamp = 0
 
 #sensor stuff
 port = '/dev/cu.usbmodem1101'  
@@ -27,6 +28,7 @@ timeout = 10
 def read_line():
         with scheduler.app.app_context():
             print('Starting job read_line')
+            timestamp += 10
             try:
 
                 # line = ser.readline().decode().strip()
@@ -36,7 +38,7 @@ def read_line():
                 # datos = Datos(sensorValue)
 
                 # result = db['clavos'].insert_one(datos.to_db_collection())
-                result = collection.insert_one({'peso': sensorValue})
+                result = collection.insert_one({'weight': sensorValue, 'timestamp': timestamp})
                 response = {
                     # **sensorValue.to_db_collection(),
                     'id': str(result.inserted_id),
