@@ -11,7 +11,7 @@ def db_connection():
     try:
         client = MongoClient(MONGO_URI, tlsCAFile=ca)
         # db = client["dbb_peso_app"]
-        db = client["clavos"]
+        db = client["test"]
         return db
     except ConnectionError as e:
         print('Error connecting to the DB')

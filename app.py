@@ -4,69 +4,72 @@ from datos import Datos
 from bson.objectid import ObjectId
 from flask_apscheduler import APScheduler
 import serial, time
+from datetime import datetime
 
 
 app = Flask(__name__)
 db = db_connection.db_connection()
-collection = db['sensor_values']
+collection = db['test']
 
-#scheduler stuff
-scheduler = APScheduler()
-scheduler.api_enabled = True
-scheduler.init_app(app)
-scheduler.start()
-timestamp = 0
+
 
 #sensor stuff
 port = '/dev/cu.usbmodem1101'  
 baudrate = 9600  
 timeout = 10
-# ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
+ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
 
 
-@scheduler.task('interval', id='do_job_1', seconds=10, misfire_grace_time=900)
-def read_line():
-        with scheduler.app.app_context():
-            print('Starting job read_line')
-            timestamp += 10
-            try:
+@app.post('/data')
+def update_data():
+    sensor_values = []
 
-                # line = ser.readline().decode().strip()
-                # sensorValue = int(line)
-                line = 'a'
-                sensorValue = 21
-                # datos = Datos(sensorValue)
+    while len(sensor_values) <= 10:
+        line = ser.readline().decode().strip()
+        sensorValue = 200
+        timestamp = datetime.now().strftime("%I:%M:%S")
 
-                # result = db['clavos'].insert_one(datos.to_db_collection())
-                result = collection.insert_one({'weight': sensorValue, 'timestamp': timestamp})
-                response = {
-                    # **sensorValue.to_db_collection(),
-                    'id': str(result.inserted_id),
-                }
-                print(jsonify(response))
+        try:
+            sensorValue = int(line)
+            print('Numero de clavos:', sensorValue)
 
-            except ValueError:
-                print('Invalid data received:', line)
+            sensor_values.append({'value':sensorValue, 'timestamp': timestamp})
+            
+        except ValueError:
+            # print('Invalid data received:', line)
+            print('Invalid data received:', sensorValue)
+    
+
+    result = collection.insert_many(sensor_values).inserted_ids
+    for i in range (len(result)):
+        result[i] = str(result[i])
+    return jsonify(result)
+
+@app.get('/data')
+def get_all_data():
+    data = list(db['test'].find())
+    for datum in data:
+        datum['_id'] = str(datum['_id'])
+    return data
 
 
 
+# @app.post('/datos')
+# def post_datos():
+#     data = request.get_json()
+#     print(data)
 
-@app.post('/datos')
-def post_datos():
-    data = request.get_json()
-    print(data)
-
-    try:
-        datos = Datos(**data)
-        print()
-        result = db['datos'].insert_one(datos.to_db_collection())
-        response = {
-            **datos.to_db_collection(),
-            'id': str(result.inserted_id),
-        }
-        return jsonify(response)
-    except TypeError:
-        abort(400)
+#     try:
+#         datos = Datos(**data)
+#         print()
+#         result = db['datos'].insert_one(datos.to_db_collection())
+#         response = {
+#             **datos.to_db_collection(),
+#             'id': str(result.inserted_id),
+#         }
+#         return jsonify(response)
+#     except TypeError:
+#         abort(400)
 
 
 @app.route('/ping')
