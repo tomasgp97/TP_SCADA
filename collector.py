@@ -1,7 +1,7 @@
 import serial,time
 
 # Configuración de la comunicación serial con Arduino
-port = '/dev/cu.usbmodem1101'  # Cambiar al puerto adecuado // este es el de mas lejos de la pantalla
+port = 'COM3'  # Cambiar al puerto adecuado // este es el de mas lejos de la pantalla
 baudrate = 9600  # Must match the baud rate in the Arduino sketch
 timeout = 10  # Timeout for serial communication (in seconds)
 

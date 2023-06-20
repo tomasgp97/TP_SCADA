@@ -14,7 +14,8 @@ collection = db['test']
 
 
 #sensor stuff
-port = '/dev/cu.usbmodem1101'  
+# port = '/dev/cu.usbmodem1101'
+port = 'COM3'
 baudrate = 9600  
 timeout = 10
 ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
@@ -25,18 +26,16 @@ def update_data():
     sensor_values = []
 
     while len(sensor_values) <= 10:
-        line = ser.readline().decode().strip()
-        sensorValue = 200
+        sensorValue = ser.readline().decode().strip()
+        # sensorValue = 200
         timestamp = datetime.now().strftime("%I:%M:%S")
 
         try:
-            sensorValue = int(line)
-            print('Numero de clavos:', sensorValue)
-
             sensor_values.append({'value':sensorValue, 'timestamp': timestamp})
+            print('inserted:', sensorValue)
+
             
         except ValueError:
-            # print('Invalid data received:', line)
             print('Invalid data received:', sensorValue)
     
 
