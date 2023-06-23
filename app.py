@@ -3,11 +3,13 @@ import database as db_connection
 from datos import Datos
 from bson.objectid import ObjectId
 from flask_apscheduler import APScheduler
-import serial, time
+from flask_cors import CORS
+# import serial, time
 from datetime import datetime
 
 
 app = Flask(__name__)
+CORS(app)
 db = db_connection.db_connection()
 collection = db['test']
 
@@ -18,16 +20,15 @@ collection = db['test']
 port = 'COM3'
 baudrate = 9600  
 timeout = 10
-ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
-
+# ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
 
 @app.post('/data')
 def update_data():
     sensor_values = []
 
     while len(sensor_values) <= 10:
-        sensorValue = ser.readline().decode().strip()
-        # sensorValue = 200
+        # sensorValue = ser.readline().decode().strip()
+        sensorValue = 1500
         timestamp = datetime.now().strftime("%I:%M:%S")
 
         try:
@@ -43,6 +44,30 @@ def update_data():
     for i in range (len(result)):
         result[i] = str(result[i])
     return jsonify(result)
+
+
+# @app.post('/data')
+# def update_data():
+#     sensor_values = []
+
+#     while len(sensor_values) <= 10:
+#         sensorValue = ser.readline().decode().strip()
+#         # sensorValue = 200
+#         timestamp = datetime.now().strftime("%I:%M:%S")
+
+#         try:
+#             sensor_values.append({'value':sensorValue, 'timestamp': timestamp})
+#             print('inserted:', sensorValue)
+
+            
+#         except ValueError:
+#             print('Invalid data received:', sensorValue)
+    
+
+#     result = collection.insert_many(sensor_values).inserted_ids
+#     for i in range (len(result)):
+#         result[i] = str(result[i])
+#     return jsonify(result)
 
 @app.get('/data')
 def get_all_data():
