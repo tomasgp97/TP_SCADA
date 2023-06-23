@@ -4,14 +4,14 @@ from datos import Datos
 from bson.objectid import ObjectId
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
-# import serial, time
+import serial, time
 from datetime import datetime
 
 
 app = Flask(__name__)
 CORS(app)
 db = db_connection.db_connection()
-collection = db['test']
+collection = db['demo']
 
 
 
@@ -20,21 +20,25 @@ collection = db['test']
 port = 'COM3'
 baudrate = 9600  
 timeout = 10
-# ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
+ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
 
 @app.post('/data')
 def update_data():
     sensor_values = []
 
     while len(sensor_values) <= 10:
-        # sensorValue = ser.readline().decode().strip()
-        sensorValue = 1500
+        line = ser.readline().decode().strip()
+        print('line: ', line)
+        sensorValue = float(line)
+        
+        # sensorValue = 1500
         timestamp = datetime.now().strftime("%I:%M:%S")
 
         try:
-            sensor_values.append({'value':sensorValue, 'timestamp': timestamp})
-            print('inserted:', sensorValue)
-
+            if(sensorValue > 0):
+                sensor_values.append({'value':sensorValue, 'timestamp': timestamp})
+                print('inserted:', sensorValue)       
+    
             
         except ValueError:
             print('Invalid data received:', sensorValue)
@@ -71,7 +75,7 @@ def update_data():
 
 @app.get('/data')
 def get_all_data():
-    data = list(db['test'].find())
+    data = list(db['demo'].find())
     for datum in data:
         datum['_id'] = str(datum['_id'])
     return data
